@@ -1,17 +1,22 @@
 package one.digitalinnovation.personapi.mapper;
 
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 import javax.annotation.processing.Generated;
 import one.digitalinnovation.personapi.dto.request.PersonDTO;
 import one.digitalinnovation.personapi.dto.request.PersonDTO.PersonDTOBuilder;
+import one.digitalinnovation.personapi.dto.request.PhoneDTO;
+import one.digitalinnovation.personapi.dto.request.PhoneDTO.PhoneDTOBuilder;
 import one.digitalinnovation.personapi.entity.Person;
 import one.digitalinnovation.personapi.entity.Person.PersonBuilder;
 import one.digitalinnovation.personapi.entity.Phone;
+import one.digitalinnovation.personapi.entity.Phone.PhoneBuilder;
 
 @Generated(
     value = "org.mapstruct.ap.MappingProcessor",
-    date = "2022-01-18T15:12:57-0300",
+    date = "2022-01-18T18:06:54-0300",
     comments = "version: 1.4.2.Final, compiler: javac, environment: Java 18-ea (Private Build)"
 )
 public class PersonMapperImpl implements PersonMapper {
@@ -24,15 +29,14 @@ public class PersonMapperImpl implements PersonMapper {
 
         PersonBuilder person = Person.builder();
 
-        person.birthDate( personDTO.getBirthDate() );
+        if ( personDTO.getBirthDate() != null ) {
+            person.birthDate( LocalDate.parse( personDTO.getBirthDate(), DateTimeFormatter.ofPattern( "dd-MM-yyyy" ) ) );
+        }
         person.id( personDTO.getId() );
         person.firstName( personDTO.getFirstName() );
         person.lastName( personDTO.getLastName() );
         person.cpf( personDTO.getCpf() );
-        List<Phone> list = personDTO.getPhones();
-        if ( list != null ) {
-            person.phones( new ArrayList<Phone>( list ) );
-        }
+        person.phones( phoneDTOListToPhoneList( personDTO.getPhones() ) );
 
         return person.build();
     }
@@ -49,12 +53,65 @@ public class PersonMapperImpl implements PersonMapper {
         personDTO.firstName( person.getFirstName() );
         personDTO.lastName( person.getLastName() );
         personDTO.cpf( person.getCpf() );
-        personDTO.birthDate( person.getBirthDate() );
-        List<Phone> list = person.getPhones();
-        if ( list != null ) {
-            personDTO.phones( new ArrayList<Phone>( list ) );
+        if ( person.getBirthDate() != null ) {
+            personDTO.birthDate( DateTimeFormatter.ISO_LOCAL_DATE.format( person.getBirthDate() ) );
         }
+        personDTO.phones( phoneListToPhoneDTOList( person.getPhones() ) );
 
         return personDTO.build();
+    }
+
+    protected Phone phoneDTOToPhone(PhoneDTO phoneDTO) {
+        if ( phoneDTO == null ) {
+            return null;
+        }
+
+        PhoneBuilder phone = Phone.builder();
+
+        phone.id( phoneDTO.getId() );
+        phone.type( phoneDTO.getType() );
+        phone.number( phoneDTO.getNumber() );
+
+        return phone.build();
+    }
+
+    protected List<Phone> phoneDTOListToPhoneList(List<PhoneDTO> list) {
+        if ( list == null ) {
+            return null;
+        }
+
+        List<Phone> list1 = new ArrayList<Phone>( list.size() );
+        for ( PhoneDTO phoneDTO : list ) {
+            list1.add( phoneDTOToPhone( phoneDTO ) );
+        }
+
+        return list1;
+    }
+
+    protected PhoneDTO phoneToPhoneDTO(Phone phone) {
+        if ( phone == null ) {
+            return null;
+        }
+
+        PhoneDTOBuilder phoneDTO = PhoneDTO.builder();
+
+        phoneDTO.id( phone.getId() );
+        phoneDTO.type( phone.getType() );
+        phoneDTO.number( phone.getNumber() );
+
+        return phoneDTO.build();
+    }
+
+    protected List<PhoneDTO> phoneListToPhoneDTOList(List<Phone> list) {
+        if ( list == null ) {
+            return null;
+        }
+
+        List<PhoneDTO> list1 = new ArrayList<PhoneDTO>( list.size() );
+        for ( Phone phone : list ) {
+            list1.add( phoneToPhoneDTO( phone ) );
+        }
+
+        return list1;
     }
 }
